@@ -1,3 +1,5 @@
+
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -91,8 +93,57 @@ import javax.swing.*;
 
                 if (clientCommand.equals("get:")) {
 
-                }
-                //main
+                    System.out.println("gets to get");
+
+                    String curDir = System.getProperty("user.dir");
+
+                    String fName = clientCommand.substring(4);
+
+                    Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+                    DataOutputStream dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
+                    File dir = new File(curDir);
+
+                    String[] children = dir.list();
+
+                    for(int i = 0; i < children.length; i++){
+
+                        System.out.println("gets to for loop" + children[i]);
+
+                        if(children[i].equals(fName)){
+
+                            System.out.println("finds child");
+
+                            BufferedReader reader;
+
+                            try{
+                                reader = new BufferedReader(new FileReader("user.dir"));
+                                String line = reader.readLine();
+
+                                while(line.equals(-1)){
+                                    System.out.println("Gets stuck here " + line);
+                                    dataOutToClient.writeUTF(line);
+
+                                }
+                                dataOutToClient.writeUTF("eof");
+                                dataSocket.close();
+
+                            }
+
+                            catch(IOException e){
+                                e.printStackTrace();
+                            }
+
+
+                        }
+
+
+                    }
+
+
+
+
+
+                }//main
             }
         }
     }

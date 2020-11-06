@@ -1,3 +1,4 @@
+
 import java.net.*;
 import java.io.*;
 
@@ -5,7 +6,7 @@ public class ftpmulti {
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = null;
         boolean listening = true;
-        ftpserver w;
+	ftpserver w;
 
         try {
             serverSocket = new ServerSocket(1200);
@@ -14,10 +15,17 @@ public class ftpmulti {
             System.exit(-1);
         }
 
-        while (listening) {
-            w = new ftpserver(serverSocket.accept());
-            Thread t = new Thread(w);
-            t.start();
-        }
+	while (listening)
+	{
+	    
+	    w = new ftpserver(serverSocket.accept());
+	    Thread t = new Thread(w);
+	    t.start();
+	   
+	   
+	}
+
+       
     }
 }
+

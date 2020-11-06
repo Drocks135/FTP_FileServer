@@ -1,4 +1,6 @@
 
+
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -22,6 +24,7 @@ class FTPClient {
         BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
         sentence = inFromUser.readLine();
         StringTokenizer tokens = new StringTokenizer(sentence);
+
 
         if (sentence.startsWith("connect")) {
             String serverName = tokens.nextToken(); // pass the connect command
@@ -58,23 +61,70 @@ class FTPClient {
                     dataSocket.close();
                     System.out.println("\nWhat would you like to do next: \nget: file.txt ||  stor: file.txt  || close");
 
-                } else if (sentence.matches("(get):\\s\\w+\\.(txt)")) {
+                }
+
+                else if (sentence.startsWith("get: ")) {
+
+
+                    String fName = sentence.substring(4);
+
+                    port = port + 2;
+                    System.out.println(port);
+                    ServerSocket welcomeData = new ServerSocket(port);
+
+                    outToServer.writeBytes(port + " " + sentence + " " + '\n');
+
+                    Socket dataSocket = welcomeData.accept();
+                    DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+
+                    modifiedSentence = "";
+
+                    System.out.println("here");
+
+                     boolean f = true;
+                     while (notEnd) {
+
+                         System.out.println("how about here");
+
+                        if(f){
+                            System.out.println("\n \n \nDownloading File");
+                        }
+
+
+                        modifiedSentence = inData.readUTF();
+                        if (modifiedSentence.equals("eof")){
+                            System.out.println("File Downloaded");
+                            break;
+                        }
+
+                    }
+
+                    File tempFile = new File("user.dir", "1"+fName);
+
+                    if ( ! tempFile.exists( ) )
+                    {
+                        tempFile.createNewFile( );
+                    }
+
+                    FileWriter fw = new FileWriter( tempFile.getAbsoluteFile( ) );
+                    BufferedWriter bw = new BufferedWriter( fw );
+                    bw.write(modifiedSentence);
+
+                    welcomeData.close();
+                    dataSocket.close();
+
+
+
+                }
+
+                else {
+                    if (sentence.equals("close")) {
+                        clientgo = false;
+                    }
+                    System.out.print("No server exists with that name or server not listening on that port try agian");
 
                 }
             }
         }
-
-
-
-	else{
-                        if (sentence.equals("close")) {
-                            clientgo = false;
-                        }
-                        System.out.print("No server exists with that name or server not listening on that port try agian");
-
-                    }
-
-
-
     }
 }
