@@ -66,7 +66,9 @@ class FTPClient {
                 else if (sentence.startsWith("get: ")) {
 
 
-                    String fName = sentence.substring(4);
+                    String fName = sentence.substring(5);
+
+                    System.out.println(fName);
 
                     port = port + 2;
                     System.out.println(port);
@@ -79,36 +81,41 @@ class FTPClient {
 
                     modifiedSentence = "";
 
-                    System.out.println("here");
-
                      boolean f = true;
                      while (notEnd) {
 
-                         System.out.println("how about here");
-
                         if(f){
                             System.out.println("\n \n \nDownloading File");
+                            f = false;
                         }
 
+                        String newInp = inData.readUTF();
 
-                        modifiedSentence = inData.readUTF();
-                        if (modifiedSentence.equals("eof")){
+                        if (newInp.equals("eof")){
                             System.out.println("File Downloaded");
                             break;
                         }
+                        else{
+                            modifiedSentence += newInp +"\n";
+                        }
 
                     }
 
-                    File tempFile = new File("user.dir", "1"+fName);
+                     //need to fix directory later
+                    File tempFile = new File("C:/Users/conti/Documents/Fall 2020/CIS 457/Project01-P/SampleCode/src", "1"+fName);
 
-                    if ( ! tempFile.exists( ) )
+                    if ( ! tempFile.exists() )
                     {
-                        tempFile.createNewFile( );
+                        tempFile.createNewFile();
                     }
 
-                    FileWriter fw = new FileWriter( tempFile.getAbsoluteFile( ) );
+                    System.out.println(modifiedSentence);
+
+                    FileWriter fw = new FileWriter( tempFile);
                     BufferedWriter bw = new BufferedWriter( fw );
                     bw.write(modifiedSentence);
+                    bw.close();
+                    fw.close();
 
                     welcomeData.close();
                     dataSocket.close();

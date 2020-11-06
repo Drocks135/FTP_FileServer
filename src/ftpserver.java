@@ -95,9 +95,12 @@ import javax.swing.*;
 
                     System.out.println("gets to get");
 
-                    String curDir = System.getProperty("user.dir");
+                    String curDir = "C:/Users/conti/Documents/Fall 2020/CIS 457/Project01-P/SampleCode/src";
 
-                    String fName = clientCommand.substring(4);
+                    clientCommand = tokens.nextToken();
+
+
+                    String fName = clientCommand;
 
                     Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
                     DataOutputStream dataOutToClient = new DataOutputStream(dataSocket.getOutputStream());
@@ -105,27 +108,27 @@ import javax.swing.*;
 
                     String[] children = dir.list();
 
+                    System.out.println(fName);
+
                     for(int i = 0; i < children.length; i++){
 
-                        System.out.println("gets to for loop" + children[i]);
 
                         if(children[i].equals(fName)){
 
-                            System.out.println("finds child");
 
                             BufferedReader reader;
 
                             try{
-                                reader = new BufferedReader(new FileReader("user.dir"));
+                                reader = new BufferedReader(new FileReader("C:/Users/conti/Documents/Fall 2020/CIS 457/Project01-P/SampleCode/src/" + clientCommand));
                                 String line = reader.readLine();
 
-                                while(line.equals(-1)){
-                                    System.out.println("Gets stuck here " + line);
+                                while(line != null){
                                     dataOutToClient.writeUTF(line);
-
+                                    line = reader.readLine();
                                 }
                                 dataOutToClient.writeUTF("eof");
                                 dataSocket.close();
+                                break;
 
                             }
 
