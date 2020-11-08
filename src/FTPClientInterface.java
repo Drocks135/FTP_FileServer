@@ -15,6 +15,7 @@ public class FTPClientInterface {
         String userInput;
 
         while(true){
+
             userInput = inFromUser.readLine();
             client.ProcessCommand(userInput);
         }

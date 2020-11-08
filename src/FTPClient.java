@@ -7,7 +7,7 @@ public class FTPClient {
     private Socket ControlSocket;
 
     public FTPClient(){
-
+        ControlSocket = new Socket();
     }
 
     public void ProcessCommand(String command){
