@@ -1,6 +1,3 @@
-
-
-
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -59,13 +56,11 @@ class FTPClient {
 
                     welcomeData.close();
                     dataSocket.close();
-                    System.out.println("\nWhat would you like to do next: \nget: file.txt ||  stor: file.txt  || close");
+                    printCommands();
 
                 }
 
                 else if (sentence.startsWith("get: ")) {
-
-
                     String fName = sentence.substring(5);
 
                     System.out.println(fName);
@@ -77,7 +72,6 @@ class FTPClient {
                     outToServer.writeBytes(port + " " + sentence + " " + '\n');
 
                     Socket dataSocket = welcomeData.accept();
-                    DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
 
                     modifiedSentence = "";
 
@@ -89,7 +83,7 @@ class FTPClient {
                             f = false;
                         }
 
-                        String newInp = inData.readUTF();
+                        String newInp = inFromServer.readUTF();
 
                         if (newInp.equals("eof")){
                             System.out.println("File Downloaded");
@@ -102,7 +96,7 @@ class FTPClient {
                     }
 
                      //need to fix directory later
-                    File tempFile = new File("C:/Users/conti/Documents/Fall 2020/CIS 457/Project01-P/SampleCode/src", "1"+fName);
+                    File tempFile = new File(fName);
 
                     if ( ! tempFile.exists() )
                     {
@@ -120,6 +114,21 @@ class FTPClient {
                     welcomeData.close();
                     dataSocket.close();
 
+                    printCommands();
+                }
+                else if(sentence.startsWith("stor: ")){
+                    String fName = sentence.substring(5);
+
+                    System.out.println(fName);
+
+                    port = port + 2;
+                    System.out.println(port);
+                    ServerSocket welcomeData = new ServerSocket(port);
+
+                    outToServer.writeBytes(port + " " + sentence + " " + '\n');
+
+                    Socket dataSocket = welcomeData.accept();
+
 
 
                 }
@@ -127,11 +136,18 @@ class FTPClient {
                 else {
                     if (sentence.equals("close")) {
                         clientgo = false;
+                        System.out.println("goodbye.");
                     }
+                    else
                     System.out.print("No server exists with that name or server not listening on that port try agian");
 
                 }
             }
         }
+
+    }
+
+    public static void printCommands(){
+        System.out.println("\nWhat would you like to do next: \nget: file.txt ||  stor: file.txt  || close");
     }
 }

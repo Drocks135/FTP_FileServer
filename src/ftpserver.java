@@ -1,5 +1,3 @@
-
-
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -15,7 +13,6 @@ import javax.swing.*;
         public ftpserver(Socket connectionSocket) {
             this.connectionSocket = connectionSocket;
         }
-
 
         public void run() {
             if (count == 1)
@@ -91,11 +88,11 @@ import javax.swing.*;
                 }//if list:
 
 
-                if (clientCommand.equals("get:")) {
+                else if (clientCommand.equals("get:")) {
 
                     System.out.println("gets to get");
 
-                    String curDir = "C:/Users/conti/Documents/Fall 2020/CIS 457/Project01-P/SampleCode/src";
+                    String curDir = System.getProperty("user.dir");
 
                     clientCommand = tokens.nextToken();
 
@@ -119,7 +116,7 @@ import javax.swing.*;
                             BufferedReader reader;
 
                             try{
-                                reader = new BufferedReader(new FileReader("C:/Users/conti/Documents/Fall 2020/CIS 457/Project01-P/SampleCode/src/" + clientCommand));
+                                reader = new BufferedReader(new FileReader(clientCommand));
                                 String line = reader.readLine();
 
                                 while(line != null){
@@ -142,11 +139,51 @@ import javax.swing.*;
 
                     }
 
+                }
+                else if (clientCommand.equals("stor:")) {
 
+                    System.out.println("stores to store.");
 
+                    clientCommand = tokens.nextToken();
 
+                    String fName = clientCommand;
 
+                    Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
+
+                    DataInputStream dataInToClient = new DataInputStream(dataSocket.getInputStream());
+
+                    File saveFile = new File(fName);
+
+                    if(!(saveFile.createNewFile())){
+                        System.out.println("File Exists. Would you to overwrite it? Y/N"); // TODO: Add if we have time otherwise just save over the file regardless.
+                    }
+                    else{
+                        PrintWriter output = new PrintWriter(new File(fName));
+
+                        boolean status = true;
+                        while(true){
+
+                            if (status){
+                                System.out.println("File Created Saving..... ");
+                                status = false;
+                            }
+
+                            String contents = dataInToClient.readUTF();
+
+                            if (contents.equals("eof")){
+                                System.out.println("File " + fName + " Saved");
+                                break;
+                            }
+                            else{
+                                output.println(contents);
+                                output.flush();
+                            }
+                        }
+                        output.close();
+
+                    }
                 }//main
+
             }
         }
     }
