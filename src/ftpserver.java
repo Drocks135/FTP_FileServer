@@ -64,7 +64,10 @@ import javax.swing.*;
                             new DataOutputStream(dataSocket.getOutputStream());
                     File dir = new File(curDir);
 
+
                     String[] children = dir.list();
+                    System.out.println(children);
+
                     if (children == null) {
                         // Either dir does not exist or is not a directory
                     } else {
