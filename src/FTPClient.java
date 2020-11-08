@@ -1,137 +1,150 @@
-
-
-
 import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.text.*;
-import java.lang.*;
-import javax.swing.*;
-class FTPClient {
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.StringTokenizer;
 
-    public static void main(String argv[]) throws Exception {
-        String sentence;
-        String modifiedSentence;
-        boolean isOpen = true;
-        int number = 1;
-        boolean notEnd = true;
-        int port1 = 1221;
-        int port = 1200;
-        String statusCode;
-        boolean clientgo = true;
+public class FTPClient {
+    private Socket ControlSocket;
 
-        System.out.println("Welcome to the simple FTP App   \n     Commands  \nconnect servername port# connects to a specified server \nlist: lists files on server \nget: fileName.txt downloads that text file to your current directory \nstor: fileName.txt Stores the file on the server \nclose terminates the connection to the server");
-        BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-        sentence = inFromUser.readLine();
-        StringTokenizer tokens = new StringTokenizer(sentence);
+    public FTPClient(){
 
+    }
 
-        if (sentence.startsWith("connect")) {
-            String serverName = tokens.nextToken(); // pass the connect command
-            serverName = tokens.nextToken();
-            port1 = Integer.parseInt(tokens.nextToken());
-            System.out.println("You are connected to " + serverName);
-            Socket ControlSocket = new Socket(serverName, port1);
-            while (isOpen && clientgo) {
+    public void ProcessCommand(String command){
+        if(ControlSocket.isConnected()){
+            String rawCommand = command.substring(0, command.indexOf(":") - 1);
 
-                sentence = inFromUser.readLine();
-                DataOutputStream outToServer = new DataOutputStream(ControlSocket.getOutputStream());
-                DataInputStream inFromServer = new DataInputStream(new BufferedInputStream(ControlSocket.getInputStream()));
-
-                if (sentence.equals("list:")) {
-
-                    port = port + 2;
-                    System.out.println(port);
-                    ServerSocket welcomeData = new ServerSocket(port);
-
-
-                    System.out.println("\n \n \nThe files on this server are:");
-                    outToServer.writeBytes(port + " " + sentence + " " + '\n');
-
-                    Socket dataSocket = welcomeData.accept();
-                    DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
-                    while (notEnd) {
-                        modifiedSentence = inData.readUTF();
-                        if (modifiedSentence.equals("eof"))
-                            break;
-                        System.out.println("	" + modifiedSentence);
-                    }
-
-                    welcomeData.close();
-                    dataSocket.close();
-                    System.out.println("\nWhat would you like to do next: \nget: file.txt ||  stor: file.txt  || close");
-
-                }
-
-                else if (sentence.startsWith("get: ")) {
-
-
-                    String fName = sentence.substring(5);
-
-                    System.out.println(fName);
-
-                    port = port + 2;
-                    System.out.println(port);
-                    ServerSocket welcomeData = new ServerSocket(port);
-
-                    outToServer.writeBytes(port + " " + sentence + " " + '\n');
-
-                    Socket dataSocket = welcomeData.accept();
-                    DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
-
-                    modifiedSentence = "";
-
-                     boolean f = true;
-                     while (notEnd) {
-
-                        if(f){
-                            System.out.println("\n \n \nDownloading File");
-                            f = false;
-                        }
-
-                        String newInp = inData.readUTF();
-
-                        if (newInp.equals("eof")){
-                            System.out.println("File Downloaded");
-                            break;
-                        }
-                        else{
-                            modifiedSentence += newInp +"\n";
-                        }
-
-                    }
-
-                     //need to fix directory later
-                    File tempFile = new File("C:/Users/conti/Documents/Fall 2020/CIS 457/Project01-P/SampleCode/src", "1"+fName);
-
-                    if ( ! tempFile.exists() )
-                    {
-                        tempFile.createNewFile();
-                    }
-
-                    System.out.println(modifiedSentence);
-
-                    FileWriter fw = new FileWriter( tempFile);
-                    BufferedWriter bw = new BufferedWriter( fw );
-                    bw.write(modifiedSentence);
-                    bw.close();
-                    fw.close();
-
-                    welcomeData.close();
-                    dataSocket.close();
-
-
-
-                }
-
-                else {
-                    if (sentence.equals("close")) {
-                        clientgo = false;
-                    }
-                    System.out.print("No server exists with that name or server not listening on that port try agian");
-
-                }
+            switch (rawCommand) {
+                case "get":
+                    GetFileContents(command);
+                    break;
+                case "stor":
+                    StoreFile(command);
+                    break;
+                case "list":
+                    ListServerContents();
+                case "close":
+                    Disconnect();
+                default:
+                    System.out.println("Invalid command");
             }
         }
+        else if(command.startsWith("connect"))
+            EstablishConnection(command);
     }
+
+    private void EstablishConnection(String command){
+        StringTokenizer tokenizedCommand = new StringTokenizer(command);
+        tokenizedCommand.nextToken(); //Use the connect command token
+        String serverName = tokenizedCommand.nextToken();
+        int connectionPort = Integer.parseInt(tokenizedCommand.nextToken());
+
+        try {
+            ControlSocket = new Socket(serverName, connectionPort);
+            System.out.println("You are connected to " + serverName);
+        } catch (Exception e){
+            System.out.println("There was a problem connecting to the server");
+        }
+    }
+
+    private void ListServerContents(){
+        try {
+            int port = ControlSocket.getPort() + 2; //This is the port the list will be receiving data on
+
+            ServerSocket welcomeData = new ServerSocket(port);
+            Socket dataSocket = welcomeData.accept();
+            DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+            System.out.println(port);
+
+            DataOutputStream outToServer = new DataOutputStream(ControlSocket.getOutputStream());
+            outToServer.writeBytes(port + " " + "list:" + " " + '\n');
+
+            String list;
+            while(true){
+                list = inData.readUTF();
+                if(list.equals("eof"))
+                    break;
+                System.out.println("    " + inData.readUTF());
+            }
+
+            welcomeData.close();
+            dataSocket.close();
+            inData.close();
+            outToServer.close();
+
+            System.out.println("\nWhat would you like to do next: \nget: file.txt ||  stor: file.txt  || close");
+
+        } catch (Exception e){
+            System.out.println("There was a problem connecting to a port\nlist command unable to process");
+        }
+    }
+
+    private void GetFileContents(String command){
+        if(command.matches("(get):\\s\\w+\\.(txt)")){
+            StringTokenizer tokenizedCommand = new StringTokenizer(command);
+            tokenizedCommand.nextToken(); //Use the command token
+            String fileName = tokenizedCommand.nextToken();
+
+            System.out.println(fileName);
+
+            int port = ControlSocket.getPort() + 2; //This is the port the get command will receive data on
+
+            try {
+                ServerSocket welcomeData = new ServerSocket(port);
+                Socket dataSocket = welcomeData.accept();
+                DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
+                DataOutputStream outToServer = new DataOutputStream(ControlSocket.getOutputStream());
+                outToServer.writeBytes(port + " " + "get: " + fileName + " " + '\n');
+
+                File tempFile = new File(fileName);
+
+                if ( !tempFile.exists() )
+                {
+                    tempFile.createNewFile();
+                }
+
+                FileWriter fw = new FileWriter( tempFile);
+                BufferedWriter bw = new BufferedWriter( fw );
+
+                System.out.println("File Downloading");
+
+                String nextLine = inData.readUTF();
+                while(true){
+                    if(nextLine.equals("eof")){
+                        System.out.println("File Downloaded");
+                        break;
+                    } else {
+                        bw.write(nextLine);
+                        nextLine = inData.readUTF();
+                        if(!nextLine.equals("eof"))
+                            bw.newLine();
+                    }
+                }
+
+                fw.close();
+                bw.close();
+                dataSocket.close();
+                welcomeData.close();
+                outToServer.close();
+            } catch (Exception e){
+                System.out.println("There was a problem connecting to a port\nget command unable to process");
+            }
+
+        } else
+            System.out.println("Invalid get command");
+    }
+
+    private void StoreFile(String command){
+
+    }
+
+    private void Disconnect(){
+        try {
+            ControlSocket.close();
+            System.out.println("Server connection closed");
+        } catch (Exception e) {
+            System.out.println("There was an error closing the connection to the server");
+        }
+    }
+
 }
