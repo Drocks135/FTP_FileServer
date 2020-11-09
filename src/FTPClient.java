@@ -72,18 +72,18 @@ class FTPClient {
                     outToServer.writeBytes(port + " " + sentence + " " + '\n');
 
                     Socket dataSocket = welcomeData.accept();
-
+                    DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
                     modifiedSentence = "";
 
-                     boolean f = true;
+                     boolean status = true;
                      while (notEnd) {
 
-                        if(f){
+                        if(status){
                             System.out.println("\n \n \nDownloading File");
-                            f = false;
+                            status = false;
                         }
 
-                        String newInp = inFromServer.readUTF();
+                        String newInp = inData.readUTF();
 
                         if (newInp.equals("eof")){
                             System.out.println("File Downloaded");
@@ -117,19 +117,49 @@ class FTPClient {
                     printCommands();
                 }
                 else if(sentence.startsWith("stor: ")){
-                    String fName = sentence.substring(5);
+                    String fName = sentence.substring(6);
 
                     System.out.println(fName);
 
-                    port = port + 2;
+                    port = port + 3;
                     System.out.println(port);
                     ServerSocket welcomeData = new ServerSocket(port);
 
                     outToServer.writeBytes(port + " " + sentence + " " + '\n');
 
                     Socket dataSocket = welcomeData.accept();
+                    DataOutputStream outData = new DataOutputStream(new BufferedOutputStream(dataSocket.getOutputStream()));
 
+                    File storeFile = new File(fName);
 
+                    if(storeFile.exists()){
+                        System.out.println("File Uploading to server, please wait...");
+
+                        BufferedReader fileContent;
+                        String line = "";
+
+                        try{
+                            fileContent = new BufferedReader(new FileReader(fName));
+
+                            line = fileContent.readLine();
+
+                            while(line != null) {
+                                outData.writeUTF(line);
+                                line = fileContent.readLine();
+                            }
+                            outToServer.writeUTF("eof");
+                            dataSocket.close();
+                        }
+
+                        catch(IOException e){
+                            e.printStackTrace();
+                        }
+                    }
+                    else{
+                        System.out.println("File was not found.\n");
+                    }
+
+                    printCommands();
 
                 }
 

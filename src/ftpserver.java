@@ -1,11 +1,9 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.text.*;
 import java.lang.*;
-import javax.swing.*;
 
-    public class ftpserver extends Thread {
+public class ftpserver extends Thread {
         private Socket connectionSocket;
         int port;
         int count = 1;
@@ -112,7 +110,6 @@ import javax.swing.*;
 
                         if(children[i].equals(fName)){
 
-
                             BufferedReader reader;
 
                             try{
@@ -139,6 +136,7 @@ import javax.swing.*;
 
                     }
 
+
                 }
                 else if (clientCommand.equals("stor:")) {
 
@@ -150,17 +148,18 @@ import javax.swing.*;
 
                     Socket dataSocket = new Socket(connectionSocket.getInetAddress(), port);
 
-                    DataInputStream dataInToClient = new DataInputStream(dataSocket.getInputStream());
+                    DataInputStream dataInFromClient = new DataInputStream(dataSocket.getInputStream());
 
                     File saveFile = new File(fName);
 
-                    if(!(saveFile.createNewFile())){
+                    //if(!(saveFile.createNewFile())){
                         System.out.println("File Exists. Would you to overwrite it? Y/N"); // TODO: Add if we have time otherwise just save over the file regardless.
-                    }
-                    else{
+                   // }
+                   // else{
                         PrintWriter output = new PrintWriter(new File(fName));
 
                         boolean status = true;
+                        String contents;
                         while(true){
 
                             if (status){
@@ -168,7 +167,7 @@ import javax.swing.*;
                                 status = false;
                             }
 
-                            String contents = dataInToClient.readUTF();
+                            if((contents = dataInFromClient.readUTF()) != null);
 
                             if (contents.equals("eof")){
                                 System.out.println("File " + fName + " Saved");
@@ -181,7 +180,7 @@ import javax.swing.*;
                         }
                         output.close();
 
-                    }
+                   // }
                 }//main
 
             }
