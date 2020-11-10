@@ -5,14 +5,17 @@ import java.util.StringTokenizer;
 
 public class FTPClient {
     private Socket ControlSocket;
+    private ServerSocket ReceiveSocket;
+    private Socket dataSocket;
 
     public FTPClient(){
         ControlSocket = new Socket();
+
     }
 
     public void ProcessCommand(String command){
         if(ControlSocket.isConnected()){
-            String rawCommand = command.substring(0, command.indexOf(":") - 1);
+            String rawCommand = command.substring(0, command.indexOf(":"));
 
             switch (rawCommand) {
                 case "get":
@@ -23,8 +26,10 @@ public class FTPClient {
                     break;
                 case "list":
                     ListServerContents();
+                    break;
                 case "close":
                     Disconnect();
+                    break;
                 default:
                     System.out.println("Invalid command");
             }
@@ -41,6 +46,7 @@ public class FTPClient {
 
         try {
             ControlSocket = new Socket(serverName, connectionPort);
+            ReceiveSocket = new ServerSocket(ControlSocket.getPort() + 2);
             System.out.println("You are connected to " + serverName);
         } catch (Exception e){
             System.out.println("There was a problem connecting to the server");
@@ -49,15 +55,17 @@ public class FTPClient {
 
     private void ListServerContents(){
         try {
-            int port = ControlSocket.getPort() + 2; //This is the port the list will be receiving data on
+            //int port = ControlSocket.getPort() + 2; //This is the port the list will be receiving data on
 
-            ServerSocket welcomeData = new ServerSocket(port);
-            Socket dataSocket = welcomeData.accept();
-            DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
-            System.out.println(port);
+            //ServerSocket welcomeData = new ServerSocket(port);
+
+            //System.out.println(port);
 
             DataOutputStream outToServer = new DataOutputStream(ControlSocket.getOutputStream());
-            outToServer.writeBytes(port + " " + "list:" + " " + '\n');
+            outToServer.writeBytes( ReceiveSocket.getLocalPort() + " " + "list:" + " " + '\n');
+
+            dataSocket = ReceiveSocket.accept();
+            DataInputStream inData = new DataInputStream(new BufferedInputStream(dataSocket.getInputStream()));
 
             String list;
             while(true){
@@ -67,10 +75,10 @@ public class FTPClient {
                 System.out.println("    " + inData.readUTF());
             }
 
-            welcomeData.close();
-            dataSocket.close();
-            inData.close();
-            outToServer.close();
+            //welcomeData.close();
+            //dataSocket.close();
+            //inData.close();
+            //outToServer.close();
 
             System.out.println("\nWhat would you like to do next: \nget: file.txt ||  stor: file.txt  || close");
 
