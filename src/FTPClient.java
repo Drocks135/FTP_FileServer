@@ -63,10 +63,10 @@ class FTPClient {
                 else if (sentence.startsWith("get: ")) {
                     String fName = sentence.substring(5);
 
-                    System.out.println(fName);
+                    //System.out.println(fName);
 
                     port = port + 2;
-                    System.out.println(port);
+                    //System.out.println(port);
                     ServerSocket welcomeData = new ServerSocket(port);
 
                     outToServer.writeBytes(port + " " + sentence + " " + '\n');
@@ -153,6 +153,7 @@ class FTPClient {
                             outData.writeUTF("eof");
                             dataSocket.close();
                             contents.close();
+                            System.out.println("Download Complete");
                         }
 
                         catch(IOException e){
@@ -167,13 +168,23 @@ class FTPClient {
 
                 }
 
-                else {
-                    if (sentence.equals("close")) {
+                else if (sentence.equals("close: ")) {
+
+                        port = port + 1;
+                        //System.out.println(port);
+
+                        outToServer.writeBytes(port + " " + sentence + " " + '\n');
+                        outToServer.close();
+                        ControlSocket.close();
+
+
                         clientgo = false;
+                        isOpen = false;
+
                         System.out.println("goodbye.");
                     }
-                    else
-                    System.out.print("No server exists with that name or server not listening on that port try agian");
+                else{
+                    System.out.print("No server exists with that name or server not listening on that port try again");
 
                 }
             }

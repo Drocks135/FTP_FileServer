@@ -181,6 +181,15 @@ public class ftpserver extends Thread {
                 }
             }
 
+            else if (clientCommand.equals("close:")){
+
+                System.out.println("User " + connectionSocket.getInetAddress() +  " disconnected.");
+                connectionSocket.close();
+                count = 0;
+                break;
+
+            }
+
         }
     }
 }
