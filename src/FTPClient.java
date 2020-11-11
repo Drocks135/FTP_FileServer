@@ -123,32 +123,36 @@ class FTPClient {
 
                     port = port + 3;
                     System.out.println(port);
-                    ServerSocket welcomeData = new ServerSocket(port);
+
+                    ServerSocket messageData = new ServerSocket(port);
 
                     outToServer.writeBytes(port + " " + sentence + " " + '\n');
 
-                    Socket dataSocket = welcomeData.accept();
-                    DataOutputStream outData = new DataOutputStream(new BufferedOutputStream(dataSocket.getOutputStream()));
+                    Socket dataSocket = messageData.accept();
+
+                    DataOutputStream outData = new DataOutputStream(dataSocket.getOutputStream());
 
                     File storeFile = new File(fName);
-
+                    Scanner contents = new Scanner(storeFile);
                     if(storeFile.exists()){
                         System.out.println("File Uploading to server, please wait...");
 
-                        BufferedReader fileContent;
+
                         String line = "";
 
                         try{
-                            fileContent = new BufferedReader(new FileReader(fName));
 
-                            line = fileContent.readLine();
 
-                            while(line != null) {
+                            line = contents.nextLine();
+
+                            while(contents.hasNextLine()) {
                                 outData.writeUTF(line);
-                                line = fileContent.readLine();
+                                line = contents.nextLine();
                             }
-                            outToServer.writeUTF("eof");
+                            outData.writeUTF(line);
+                            outData.writeUTF("eof");
                             dataSocket.close();
+                            contents.close();
                         }
 
                         catch(IOException e){
@@ -178,6 +182,6 @@ class FTPClient {
     }
 
     public static void printCommands(){
-        System.out.println("\nWhat would you like to do next: \nget: file.txt ||  stor: file.txt  || close");
+        System.out.println("\nWhat would you like to do next: \nget: file.txt ||  stor: file.txt  || close\n");
     }
 }
