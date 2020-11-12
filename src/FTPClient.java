@@ -17,12 +17,12 @@ class FTPClient {
         String statusCode;
         boolean clientGo = true;
 
-        System.out.println("Welcome to the simple FTP App   \n     Commands:  " +
-                "\nconnect servername controlConnection# connects to a specified server " +
-                "\nlist: lists files on server " +
-                "\nget: fileName.txt downloads that text file to your current directory " +
-                "\nstor: fileName.txt Stores the file on the server " +
-                "\nclose terminates the connection to the server");
+        System.out.println("Welcome to the simple FTP App   \n---Commands---" +
+                "\n| connect servername controlConnection# connects to a specified server " +
+                "\n| list: lists files on server " +
+                "\n| get: fileName.txt downloads that text file to your current directory " +
+                "\n| stor: fileName.txt Stores the file on the server " +
+                "\n| close terminates the connection to the server");
         BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
         sentence = inFromUser.readLine();
         StringTokenizer tokens = new StringTokenizer(sentence);
